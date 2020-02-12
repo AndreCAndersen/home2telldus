@@ -4,8 +4,8 @@ from home2telldus import h2t
 
 class Home2TelldusCli:
 
-    def hello(self):
-        h2t.hello()
+    def login(self):
+        h2t.login()
 
 
 if __name__ == '__main__':
