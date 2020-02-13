@@ -5,11 +5,13 @@ import requests
 from urllib.parse import urlencode
 import bs4
 
+
 class Home2TelldusClient:
 
-    def __init__(self, email=os.environ.get('TELLDUS_EMAIL'), password=os.environ.get('TELLDUS_PASSWORD')):
-        self.email = email
-        self.password = password
+    def __init__(self, email=None, password=None):
+        self.email = email or os.environ.get('TELLDUS_EMAIL')
+        self.password = password or os.environ.get('TELLDUS_PASSWORD')
+        assert self.email and self.password
         self.session = None
 
     def __enter__(self):
