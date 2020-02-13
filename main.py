@@ -1,11 +1,12 @@
 import fire
-from home2telldus import h2t
+from home2telldus.h2t import Home2TelldusClient
 
 
 class Home2TelldusCli:
 
-    def login(self):
-        h2t.login()
+    def run(self, device_name, command):
+        with Home2TelldusClient() as client:
+            client.run(device_name, command)
 
 
 if __name__ == '__main__':
