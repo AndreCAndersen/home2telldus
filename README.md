@@ -19,15 +19,15 @@ Usage:
 To run a Telldus command run the `Home2TelldusCli` command line interface.
 Do one of the following:
 
-1) Set the envirnoment variables: `TELLDUS_EMAIL` and `TELLDUS_PASSWORD` and 
+1) Set the environment variables: `TELLDUS_EMAIL` and `TELLDUS_PASSWORD` and 
 run your command:
 
 ```
 python3 main.py run --device_name="My Lamp" --command=on
 ```
 
-2) ... or just set the password in the command line as well:
+2) ... or just set the email and password in the command line as well:
 
 ```
-python3 main.py run --device_name="My Lamp" --command=on --username=hello@example.com --password=SECRET
+python3 main.py run --device_name="My Lamp" --command=on --email=hello@example.com --password=SECRET
 ```
