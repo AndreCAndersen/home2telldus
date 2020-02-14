@@ -17,11 +17,6 @@ def main():
 
 @app.route('/api')
 def api():
-    return 'api'
-
-
-@app.route('/api')
-def api():
     actual_secret = os.environ.get('APP_SECRET')
     claimed_secret = request.args.get('secret')
 
