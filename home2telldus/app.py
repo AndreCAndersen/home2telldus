@@ -21,12 +21,12 @@ def api():
     claimed_secret = request.args.get('secret')
 
     if actual_secret != claimed_secret:
-        abort(401)
+        jsonify({'message': 'unauthorized'}), 401
 
-    # command = request.args.get('command')
-    # device_name = request.args.get('device_name')
-    #
-    # with Home2TelldusClient() as client:
-    #     client.run(device_name, command)
+    command = request.args.get('command')
+    device_name = request.args.get('device_name')
+
+    with Home2TelldusClient() as client:
+        client.run(device_name, command)
 
     return jsonify({'message': 'success'})
