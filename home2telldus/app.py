@@ -1,7 +1,7 @@
 import os
 from flask import Flask
-from flask import abort
 from flask import jsonify
+from flask import render_template
 from flask import request
 
 from home2telldus.h2t import Home2TelldusClient
@@ -12,11 +12,15 @@ app.config['DEBUG'] = is_debug = os.environ.get('APP_ENV', 'production') == 'deb
 
 @app.route('/')
 def main():
-    return 'app'
+    return render_template('index.html')
 
 
 @app.route('/api')
 def api():
+
+    password = request.args.get('password')
+    email = request.args.get('email')
+
     actual_secret = os.environ.get('APP_SECRET')
     claimed_secret = request.args.get('secret')
 
