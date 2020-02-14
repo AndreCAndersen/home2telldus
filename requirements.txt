@@ -2,3 +2,4 @@ fire==0.2.1
 requests==2.22.0
 beautifulsoup4==4.8.2
 Flask==1.1.1
+gunicorn=20.0.4
