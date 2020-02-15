@@ -69,7 +69,7 @@ def main():
 class CommandResource(Resource):
 
     @api.marshal_with(default_model)
-    @api.expected(command_model)
+    @api.expect(command_model)
     def post(self):
         args = request.json
         email, password = self._get_email_and_password(args)
