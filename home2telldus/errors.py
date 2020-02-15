@@ -2,51 +2,51 @@ class RootException(Exception):
     pass
 
 
-class ClientMissingCommandError(RootException):
+class ClientMissingCommandError(Exception):
     pass
 
 
-class ClientMissingDeviceError(RootException):
+class ClientMissingDeviceError(Exception):
     pass
 
 
-class ClientMissingEmailError(RootException):
+class ClientMissingEmailError(Exception):
     pass
 
 
-class ClientMissingPasswordError(RootException):
+class ClientMissingPasswordError(Exception):
     pass
 
 
-class InvalidNumberError(RootException):
+class InvalidNumberError(Exception):
     def __init__(self, arg_key):
         self.arg_key = arg_key
 
 
-class InvalidSecretError(RootException):
+class InvalidSecretError(Exception):
     pass
 
 
-class NotANumberError(RootException):
+class NotANumberError(Exception):
     def __init__(self, arg_key):
         self.arg_key = arg_key
 
 
-class ServerHasNoSecretError(RootException):
+class ServerHasNoSecretError(Exception):
     pass
 
 
-class ServerMissingEmailError(RootException):
+class ServerMissingEmailError(Exception):
     pass
 
 
-class ServerMissingPasswordError(RootException):
+class ServerMissingPasswordError(Exception):
     pass
 
 
-class UnknownCommandError(RootException):
+class UnknownCommandError(Exception):
     pass
 
 
-class UnknownDeviceError(RootException):
+class UnknownDeviceError(Exception):
     pass
