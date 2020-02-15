@@ -170,7 +170,7 @@ class CommandResource(Resource):
 
     @classmethod
     def _get_argument(cls, args, arg_key, default_value, from_value, to_value, number_type):
-        value = args.get('secret')
+        value = args.get(arg_key)
         if value:
             try:
                 value = number_type(value)
