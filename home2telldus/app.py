@@ -69,13 +69,20 @@ def main():
 class CommandResource(Resource):
 
     @api.marshal_with(default_model)
+    def get(self):
+        return self._handle_request(request.args)
+
+    @api.marshal_with(default_model)
     @api.expect(command_model)
     def post(self):
-        args = request.json
-        email, password = self._get_email_and_password(args)
-        command, device_name = self._get_command_and_device(args)
-        repeat = self._get_argument('repeat', 4, 1, 8, int)
-        sleep_time = self._get_argument('sleep', 2, 0, 2, float)
+        return self._handle_request(request.json)
+
+    @classmethod
+    def _handle_request(cls, args):
+        email, password = cls._get_email_and_password(args)
+        command, device_name = cls._get_command_and_device(args)
+        repeat = cls._get_argument('repeat', 4, 1, 8, int)
+        sleep_time = cls._get_argument('sleep', 2, 0, 2, float)
 
         with Home2TelldusClient(email, password) as client:
             client.run_command(device_name, command, repeat, sleep_time)
