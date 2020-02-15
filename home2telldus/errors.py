@@ -1,4 +1,4 @@
-class RootException(BaseException):
+class RootException(Exception):
     pass
 
 

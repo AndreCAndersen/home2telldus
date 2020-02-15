@@ -201,7 +201,7 @@ def handle_root_exception(error):
 
 
 @api.errorhandler(ClientMissingCommandError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=401)
 def handle_client_missing_command_error(error):
     return {
         'message': 'Client did not provide `command` query parameter.',
@@ -210,7 +210,7 @@ def handle_client_missing_command_error(error):
 
 
 @api.errorhandler(ClientMissingDeviceError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=401)
 def handle_client_missing_device_error(error):
     return {
         'message': 'Client did not provide `device` query parameter.',
@@ -219,7 +219,7 @@ def handle_client_missing_device_error(error):
 
 
 @api.errorhandler(ClientMissingEmailError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=401)
 def handle_client_missing_email_error(error):
     return {
         'message': 'Client did not provide `email` query parameter.',
@@ -228,7 +228,7 @@ def handle_client_missing_email_error(error):
 
 
 @api.errorhandler(ClientMissingPasswordError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=401)
 def handle_client_missing_password_error(error):
     return {
         'message': 'Client did not provide `password` query parameter.',
@@ -237,7 +237,7 @@ def handle_client_missing_password_error(error):
 
 
 @api.errorhandler(InvalidNumberError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=400)
 def handle_invalid_number_error(error):
     return {
         'message': 'Client supplied a `%s` query of illegal size.',
@@ -246,7 +246,7 @@ def handle_invalid_number_error(error):
 
 
 @api.errorhandler(InvalidSecretError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=401)
 def handle_invalid_secret_error(error):
     return {
         'message': 'Client provided the incorrect `secret` query parameter.',
@@ -255,7 +255,7 @@ def handle_invalid_secret_error(error):
 
 
 @api.errorhandler(NotANumberError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=400)
 def handle_not_a_number_error(error):
     return {
         'message': 'Client did not supply a valid number as the `%s` query parameter.',
@@ -264,7 +264,7 @@ def handle_not_a_number_error(error):
 
 
 @api.errorhandler(ServerHasNoSecretError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=500)
 def handle_server_has_no_secret_error(error):
     return {
         'message': 'Server is not configured with a `APP_SECRET` environmental variable.',
@@ -273,7 +273,7 @@ def handle_server_has_no_secret_error(error):
 
 
 @api.errorhandler(ServerMissingEmailError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=500)
 def handle_server_missing_email_error(error):
     return {
         'message': 'Server is not configured with `TELLDUS_EMAIL` environmental variable.',
@@ -282,7 +282,7 @@ def handle_server_missing_email_error(error):
 
 
 @api.errorhandler(ServerMissingPasswordError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=500)
 def handle_server_missing_password_error(error):
     return {
         'message': 'Server is not configured with `TELLDUS_PASSWORD` environmental variable.',
@@ -291,7 +291,7 @@ def handle_server_missing_password_error(error):
 
 
 @api.errorhandler(UnknownCommandError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=400)
 def handle_unknown_command_error(error):
     return {
         'message': 'Client provided an unknown `command` query parameter.',
@@ -300,7 +300,7 @@ def handle_unknown_command_error(error):
 
 
 @api.errorhandler(UnknownDeviceError)
-@api.marshal_with(error_model, mask=False)
+@api.marshal_with(error_model, mask=False, code=400)
 def handle_unknown_device_error(error):
     return {
         'message': 'Client provided an unknown `device` query parameter.',
