@@ -6,7 +6,6 @@ from flask import request
 from flask_restplus import Api
 from flask_restplus import Resource
 from flask_restplus import fields
-from flask_restplus import reqparse
 
 from home2telldus.errors import RootException
 from home2telldus.errors import ClientMissingCommandError
@@ -37,42 +36,45 @@ error_model = api.model('ErrorModel', {
     'exception': fields.String(description='The exception type of the error.'),
 })
 
+command_model = api.model('CommandModel', {
+    'secret': fields.String(),
+    'email': fields.String(),
+    'password': fields.String(),
+    'device': fields.String(),
+    'command': fields.String(),
+    'repeat': fields.Integer(),
+    'sleep': fields.Float(),
+})
+
 
 @app.route('/')
 def main():
     return render_template('index.html')
 
 
-@api.route('/api')
+@api.route('/api/command')
 @api.doc(
     post={
         'params': {
             'secret': 'A secret set as the APP_SECRET env variable. If used env variables TELLDUS_EMAIL and TELLDUS_PASSWORD will be used as email and password.',
-            'email': 'A Telldus Live registered email.',
-            'password': 'A Telldus Live registered password',
-            'device': 'The name of the device for which a command should be given.',
-            'command': 'Accepts either `on` or `off` as commands to the specified device.',
-            'repeat': 'An integer saying how many times the command should be given, between 1 and 8. Usefull to make sure the command is actually registered.',
-            'sleep': 'How long the request should wait between repeated commands.',
+            'email': 'A Telldus Live email. Requires a password.',
+            'password': 'A Telldus Live password. Requires an email.',
+            'device': 'The name of the device for which a command should be given. Required.',
+            'command': 'Accepts either `on` or `off` as commands to the specified device. Required.',
+            'repeat': 'An integer saying how many times the command should be given, between 1 and 8. Usefull to make sure the command is actually registered. Default is 4.',
+            'sleep': 'How long (seconds) the request should wait between repeated commands. Default is 2 seconds.',
         }
     }
 )
-class ApiResource(Resource):
-    parser = reqparse.RequestParser()
-    parser.add_argument('secret', type=str)
-    parser.add_argument('email', type=str)
-    parser.add_argument('password', type=str)
-    parser.add_argument('device', type=str)
-    parser.add_argument('command', type=str)
-    parser.add_argument('repeat', type=int, default=1)
-    parser.add_argument('sleep', type=float, default=2.0)
+class CommandResource(Resource):
 
     @api.marshal_with(default_model)
+    @api.expected(command_model)
     def post(self):
-        args = self.parser.parse_args()
+        args = request.json
         email, password = self._get_email_and_password(args)
         command, device_name = self._get_command_and_device(args)
-        repeat = self._get_argument('repeat', 5, 1, 8, int)
+        repeat = self._get_argument('repeat', 4, 1, 8, int)
         sleep_time = self._get_argument('sleep', 2, 0, 2, float)
 
         with Home2TelldusClient(email, password) as client:
