@@ -56,10 +56,11 @@ Instructions
 }
 ```
 
-You can also set `repeat` and `sleep`. In addition you are running your own server you 
-can configure `TELLDUS_EMAIL`, `TELLDUS_PASSWORD` and `APP_SECRET` thus enabling 
-the option to use the `secret` argument instead of passing `email` and `password` 
-as arguments. This makes it possible to not have to store your password in IFTTT.
+You can also set `repeat` and `sleep`. In addition, if you are running your own 
+server you  can configure `TELLDUS_EMAIL`, `TELLDUS_PASSWORD` and `APP_SECRET` 
+thus enabling the option to use the `secret` argument instead of passing `email` 
+and `password`  as arguments. This makes it possible to not have to store your 
+password in IFTTT.
 
 16) When all this is done, click create action, and everything should be set up.
 
