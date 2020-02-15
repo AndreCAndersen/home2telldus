@@ -5,6 +5,7 @@ from urllib.parse import urlencode
 
 from home2telldus.errors import UnknownCommandError
 from home2telldus.errors import UnknownDeviceError
+from home2telldus.errors import InvalidEmailOrPasswordError
 
 
 class Home2TelldusClient:
@@ -82,9 +83,12 @@ class Home2TelldusClient:
             'email': self.email,
             'password': self.password,
         }
-        session.post(
+        response = session.post(
             login_url,
             data=form_data,
         )
+
+        if 'Logged in as' not in response.text:
+            raise InvalidEmailOrPasswordError()
 
         return session

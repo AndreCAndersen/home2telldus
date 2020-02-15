@@ -18,6 +18,10 @@ class ClientMissingPasswordError(Exception):
     pass
 
 
+class InvalidEmailOrPasswordError(Exception):
+    pass
+
+
 class InvalidNumberError(Exception):
     def __init__(self, arg_key):
         self.arg_key = arg_key

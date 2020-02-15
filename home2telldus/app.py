@@ -10,6 +10,7 @@ from home2telldus.errors import ClientMissingCommandError
 from home2telldus.errors import ClientMissingDeviceError
 from home2telldus.errors import ClientMissingEmailError
 from home2telldus.errors import ClientMissingPasswordError
+from home2telldus.errors import InvalidEmailOrPasswordError
 from home2telldus.errors import InvalidNumberError
 from home2telldus.errors import InvalidSecretError
 from home2telldus.errors import NotANumberError
@@ -234,6 +235,15 @@ def handle_client_missing_password_error(error):
         'message': 'Client did not provide `password` query parameter.',
         'exception': 'ClientMissingPasswordError'
     }, 401
+
+
+@api.errorhandler(InvalidEmailOrPasswordError)
+@api.marshal_with(error_model, mask=False, code=400)
+def handle_invalid_number_error(error):
+    return {
+        'message': 'Invalid email or password supplied.',
+        'exception': 'InvalidEmailOrPasswordError'
+    }, 400  # Technically it can be a 500 too.
 
 
 @api.errorhandler(InvalidNumberError)
