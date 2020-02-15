@@ -136,8 +136,8 @@ class CommandResource(Resource):
     def _handle_request(cls, args):
         email, password = cls._get_email_and_password(args)
         command, device_name = cls._get_command_and_device(args)
-        repeat = cls._get_argument('repeat', 4, 1, 8, int)
-        sleep_time = cls._get_argument('sleep', 2, 0, 2, float)
+        repeat = cls._get_argument(args, 'repeat', 4, 1, 8, int)
+        sleep_time = cls._get_argument(args, 'sleep', 2, 0, 2, float)
 
         with Home2TelldusClient(email, password) as client:
             client.run_command(device_name, command, repeat, sleep_time)
@@ -169,8 +169,8 @@ class CommandResource(Resource):
         return email, password
 
     @classmethod
-    def _get_argument(cls, arg_key, default_value, from_value, to_value, number_type):
-        value = request.args.get(arg_key)
+    def _get_argument(cls, args, arg_key, default_value, from_value, to_value, number_type):
+        value = args.get('secret')
         if value:
             try:
                 value = number_type(value)
