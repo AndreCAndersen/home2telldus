@@ -3,9 +3,9 @@ from flask import Flask
 from flask import jsonify
 from flask import render_template
 from flask import request
-from flask_restplus import Api
-from flask_restplus import Resource
-from flask_restplus import fields
+from flask_restx import Api
+from flask_restx import Resource
+from flask_restx import fields
 
 from home2telldus.errors import RootException
 from home2telldus.errors import ClientMissingCommandError
