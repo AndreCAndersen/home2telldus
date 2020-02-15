@@ -1,72 +1,66 @@
-import os
 from time import sleep
 
 import requests
 from urllib.parse import urlencode
-import bs4
+
+from home2telldus.errors import UnknownCommandError
+from home2telldus.errors import UnknownDeviceError
 
 
 class Home2TelldusClient:
 
-    def __init__(self, email=None, password=None):
-        self.email = email or os.environ.get('TELLDUS_EMAIL')
-        self.password = password or os.environ.get('TELLDUS_PASSWORD')
+    def __init__(self, email, password):
+        self.email = email
+        self.password = password
         assert self.email and self.password
         self.session = None
 
     def __enter__(self):
-        print("Entering client.")
-        print()
 
         self.session = self.login()
-
         # wsevent_client_list_url = 'https://live.telldus.com/wsevent/clientList?https=1'
         # clients = self.session.get(wsevent_client_list_url).json()
-        # pprint(clients)
-
-        print('Clients')
-        print('  ', 'name', 'id')
-        print('  ', '---------------')
         client_list_url = 'https://live.telldus.com/client/list'
         self.clients = self.session.get(client_list_url).json()['client']
-        for client in self.clients:
-            print('  ', client['name'], client['id'])
-        print()
-
         device_list_url = 'https://live.telldus.com/device/list'
         self.devices = self.session.get(device_list_url).json()['device']
-        print('Devices')
-        print('  ', 'name', 'id', 'devices', 'online')
-        print('  ', '---------------')
-        for device in self.devices:
-            print('  ', device['name'], device['id'], device.get('devices'), device['online'])
-        print()
 
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print()
-        print("Exiting client.")
+        pass
 
-    def run(self, device_name, command):
-        assert self.session
+    def _find_device(self, device_name):
+        for device in self.devices:
+            if device['name'] == device_name:
+                return device
+        raise UnknownDeviceError()
+
+    def _find_method(self, command):
         method_keys = {
             'on': 1,
             'off': 2,
         }
-        device = next(device for device in self.devices if device['name'] == device_name)
-        print('Running Command:', device_name, '->', command)
-        for _ in range(5):  # Five times to make sure the command is done.
+        if command not in method_keys:
+            raise UnknownCommandError()
+
+        return self._find_method(command)
+
+    def run_command(self, device_name, command, repeat, sleep_time):
+        assert self.session
+        device = self._find_device(device_name)
+        method = self._find_method(command)
+
+        for _ in range(repeat):  # Repeat this many times to make sure the command is done.
             command_url = 'https://live.telldus.com/device/command?id=%(device_id)s&method=%(method_id)s'
-            response = self.session.get(
+            self.session.get(
                 command_url % {
                     'device_id': device['id'],
-                    'method_id': method_keys[command],
+                    'method_id': method,
                 }
             )
-            print('  ', response.json())
-            sleep(2)
-        print()
+            if repeat > 1:
+                sleep(sleep_time)
 
     def login(self):
         session = requests.session()
@@ -87,15 +81,9 @@ class Home2TelldusClient:
             'email': self.email,
             'password': self.password,
         }
-        response = session.post(
+        session.post(
             login_url,
             data=form_data,
         )
-
-        sup = bs4.BeautifulSoup(response.text, features='html.parser')
-        name = sup.find('a', {'class': 'loginItem'}).get_text().split(':')[1].strip()
-        print('Logged in')
-        print('  ', name)
-        print()
 
         return session
