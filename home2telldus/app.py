@@ -1,7 +1,5 @@
 import os
 from flask import Flask
-from flask import jsonify
-from flask import render_template
 from flask import request
 from flask_restx import Api
 from flask_restx import Resource
@@ -25,7 +23,75 @@ from home2telldus.h2t import Home2TelldusClient
 app = Flask(__name__)
 app.config['DEBUG'] = is_debug = os.environ.get('APP_ENV', 'production') == 'debug'
 
-api = Api(app)
+doc_html = """
+This is a free API service to enable voice commands from [Google Home](https://store.google.com/product/google_home) to [Telldus Live!](https://live.telldus.com/) via 
+[IFTTT](https://ifttt.com/). It was created primarly to support my own DYI home automation setup, but as it is 
+already running it might as well respond to external requests as well.
+
+Instructions
+---
+
+1) Set up Google Home with a Google Assistant.
+2) Set up a Telldus Live! account and configure your devices to use it.
+3) Make sure that you use email and password authentication with your Google Home account.
+4) Set up a IFTTT account.
+5) Link your Google Home to IFTTT. You do not need to do the same with Telldus Live!.
+6) When logged in to IFTTT click your profile, and then Create.
+7) Choose Google Assistant as a service.
+8) Choose "Say a simple phrase" as your trigger.
+9) Add your phrase, and other variants of it, and a response. Then click "Create trigger".
+10) Choose Webhook as your service and "Make a web request" as the action.
+12) Add `http://home2telldus.herokuapp.com/command`, or your own heroku server URL.
+13) Use POST as the method.
+14) Select `application/json` as the content type.
+15) Add your command as a json object in the body. The following is an example:
+
+```
+{
+    "email": "you@example.com",
+    "password": "your_password",
+    "device": "Your Device",
+    "command": "on"
+}
+```
+
+You can also set `repeat` and `sleep`. In addition you are running your own server you 
+can configure `TELLDUS_EMAIL`, `TELLDUS_PASSWORD` and `APP_SECRET` thus enabling 
+the option to use the `secret` argument instead of passing `email` and `password` 
+as arguments. This makes it possible to not have to store your password in IFTTT.
+
+16) When all this is done, click create action, and everything should be set up.
+
+Testing Telldus Live! interface
+---
+Use the testing suit below. default > POST /command > Try it out. 
+
+Source Code
+---
+
+Source code can be found on <a href="https://github.com/AndreCAndersen/home2telldus">Github</a>.
+
+Warranty and Risk
+---
+
+This service comes with ABSOLUTELY NO WARRANTY, and you use it at your own risk.
+
+Note that query parameters set using a `get` requests will be logged by heroko. This means 
+your email and password will be stored in plain text, and retrievable.This means you 
+should not use the GET requests with this API.
+"""
+
+api = Api(app, title='home2telldus API', description=doc_html)
+
+command_arg_doc = {
+    'secret': 'A secret set as the APP_SECRET env variable. If used env variables TELLDUS_EMAIL and TELLDUS_PASSWORD will be used as email and password.',
+    'email': 'A Telldus Live email. Requires a password.',
+    'password': 'A Telldus Live password. Requires an email.',
+    'device': 'The name of the device for which a command should be given. Required.',
+    'command': 'Accepts either `on` or `off` as commands to the specified device. Required.',
+    'repeat': 'An integer saying how many times the command should be given, between 1 and 8. Usefull to make sure the command is actually registered. Default is 4.',
+    'sleep': 'How long (seconds) the request should wait between repeated commands. Default is 2 seconds.',
+}
 
 default_model = api.model('DefaultModel', {
     'message': fields.String(description='A message from the API.'),
@@ -37,42 +103,27 @@ error_model = api.model('ErrorModel', {
 })
 
 command_model = api.model('CommandModel', {
-    'secret': fields.String(),
-    'email': fields.String(),
-    'password': fields.String(),
-    'device': fields.String(),
-    'command': fields.String(),
-    'repeat': fields.Integer(),
-    'sleep': fields.Float(),
+    'secret': fields.String(description=command_arg_doc['secret']),
+    'email': fields.String(description=command_arg_doc['email']),
+    'password': fields.String(description=command_arg_doc['password']),
+    'device': fields.String(description=command_arg_doc['device']),
+    'command': fields.String(description=command_arg_doc['command']),
+    'repeat': fields.Integer(description=command_arg_doc['repeat']),
+    'sleep': fields.Float(description=command_arg_doc['sleep']),
 })
 
 
-@app.route('/')
-def main():
-    return render_template('index.html')
-
-
-@api.route('/api/command')
+@api.route('/command')
 @api.doc(
-    post={
-        'params': {
-            'secret': 'A secret set as the APP_SECRET env variable. If used env variables TELLDUS_EMAIL and TELLDUS_PASSWORD will be used as email and password.',
-            'email': 'A Telldus Live email. Requires a password.',
-            'password': 'A Telldus Live password. Requires an email.',
-            'device': 'The name of the device for which a command should be given. Required.',
-            'command': 'Accepts either `on` or `off` as commands to the specified device. Required.',
-            'repeat': 'An integer saying how many times the command should be given, between 1 and 8. Usefull to make sure the command is actually registered. Default is 4.',
-            'sleep': 'How long (seconds) the request should wait between repeated commands. Default is 2 seconds.',
-        }
-    }
+    get={'params': command_arg_doc},
 )
 class CommandResource(Resource):
 
-    @api.marshal_with(default_model)
+    @api.marshal_with(default_model, mask=False)
     def get(self):
         return self._handle_request(request.args)
 
-    @api.marshal_with(default_model)
+    @api.marshal_with(default_model, mask=False)
     @api.expect(command_model)
     def post(self):
         return self._handle_request(request.json)
@@ -87,12 +138,12 @@ class CommandResource(Resource):
         with Home2TelldusClient(email, password) as client:
             client.run_command(device_name, command, repeat, sleep_time)
 
-        return jsonify({'message': 'Command was successfully sent.'})
+        return {'message': 'Command was successfully sent.'}
 
     @classmethod
     def _get_email_and_password(cls, args):
         actual_secret = os.environ.get('APP_SECRET')
-        claimed_secret = args['secret']
+        claimed_secret = args.get('secret')
         if claimed_secret and not actual_secret:
             raise ServerHasNoSecretError()
         elif claimed_secret and actual_secret:
@@ -105,10 +156,10 @@ class CommandResource(Resource):
             if actual_secret != claimed_secret:
                 raise InvalidSecretError()
         else:
-            email = args['email']
+            email = args.get('email')
             if not email:
                 raise ClientMissingEmailError()
-            password = args['password']
+            password = args.get('password')
             if not password:
                 raise ClientMissingPasswordError()
         return email, password
@@ -129,17 +180,17 @@ class CommandResource(Resource):
 
     @classmethod
     def _get_command_and_device(cls, args):
-        device = args['device']
+        device = args.get('device')
         if not device:
             raise ClientMissingDeviceError()
-        command = args['command']
+        command = args.get('command')
         if not command:
             raise ClientMissingCommandError()
         return command, device
 
 
 @api.errorhandler(RootException)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_root_exception(error):
     return {
         'message': 'An error occurred.',
@@ -148,7 +199,7 @@ def handle_root_exception(error):
 
 
 @api.errorhandler(ClientMissingCommandError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_client_missing_command_error(error):
     return {
         'message': 'Client did not provide `command` query parameter.',
@@ -157,7 +208,7 @@ def handle_client_missing_command_error(error):
 
 
 @api.errorhandler(ClientMissingDeviceError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_client_missing_device_error(error):
     return {
         'message': 'Client did not provide `device` query parameter.',
@@ -166,7 +217,7 @@ def handle_client_missing_device_error(error):
 
 
 @api.errorhandler(ClientMissingEmailError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_client_missing_email_error(error):
     return {
         'message': 'Client did not provide `email` query parameter.',
@@ -175,7 +226,7 @@ def handle_client_missing_email_error(error):
 
 
 @api.errorhandler(ClientMissingPasswordError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_client_missing_password_error(error):
     return {
         'message': 'Client did not provide `password` query parameter.',
@@ -184,7 +235,7 @@ def handle_client_missing_password_error(error):
 
 
 @api.errorhandler(InvalidNumberError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_invalid_number_error(error):
     return {
         'message': 'Client supplied a `%s` query of illegal size.',
@@ -193,7 +244,7 @@ def handle_invalid_number_error(error):
 
 
 @api.errorhandler(InvalidSecretError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_invalid_secret_error(error):
     return {
         'message': 'Client provided the incorrect `secret` query parameter.',
@@ -202,7 +253,7 @@ def handle_invalid_secret_error(error):
 
 
 @api.errorhandler(NotANumberError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_not_a_number_error(error):
     return {
         'message': 'Client did not supply a valid number as the `%s` query parameter.',
@@ -211,7 +262,7 @@ def handle_not_a_number_error(error):
 
 
 @api.errorhandler(ServerHasNoSecretError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_server_has_no_secret_error(error):
     return {
         'message': 'Server is not configured with a `APP_SECRET` environmental variable.',
@@ -220,7 +271,7 @@ def handle_server_has_no_secret_error(error):
 
 
 @api.errorhandler(ServerMissingEmailError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_server_missing_email_error(error):
     return {
         'message': 'Server is not configured with `TELLDUS_EMAIL` environmental variable.',
@@ -229,7 +280,7 @@ def handle_server_missing_email_error(error):
 
 
 @api.errorhandler(ServerMissingPasswordError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_server_missing_password_error(error):
     return {
         'message': 'Server is not configured with `TELLDUS_PASSWORD` environmental variable.',
@@ -238,7 +289,7 @@ def handle_server_missing_password_error(error):
 
 
 @api.errorhandler(UnknownCommandError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_unknown_command_error(error):
     return {
         'message': 'Client provided an unknown `command` query parameter.',
@@ -247,7 +298,7 @@ def handle_unknown_command_error(error):
 
 
 @api.errorhandler(UnknownDeviceError)
-@api.marshal_with(error_model)
+@api.marshal_with(error_model, mask=False)
 def handle_unknown_device_error(error):
     return {
         'message': 'Client provided an unknown `device` query parameter.',

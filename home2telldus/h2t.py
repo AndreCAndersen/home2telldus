@@ -36,15 +36,16 @@ class Home2TelldusClient:
                 return device
         raise UnknownDeviceError()
 
-    def _find_method(self, command):
-        method_keys = {
+    @classmethod
+    def _find_method(cls, command):
+        methods = {
             'on': 1,
             'off': 2,
         }
-        if command not in method_keys:
+        method = methods.get(command)
+        if not method:
             raise UnknownCommandError()
-
-        return self._find_method(command)
+        return method
 
     def run_command(self, device_name, command, repeat, sleep_time):
         assert self.session
