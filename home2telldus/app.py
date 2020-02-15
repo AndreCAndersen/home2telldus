@@ -251,8 +251,8 @@ def handle_invalid_number_error(error):
 @api.marshal_with(error_model, mask=False, code=400)
 def handle_invalid_number_error(error):
     return {
-        'message': 'Client supplied a `%s` query of illegal size.',
-        'exception': 'InvalidNumberError' % error.arg_key
+        'message': 'Client supplied a `%s` query of illegal size.' % error.arg_key,
+        'exception': 'InvalidNumberError'
     }, 400
 
 
@@ -269,8 +269,8 @@ def handle_invalid_secret_error(error):
 @api.marshal_with(error_model, mask=False, code=400)
 def handle_not_a_number_error(error):
     return {
-        'message': 'Client did not supply a valid number as the `%s` query parameter.',
-        'exception': 'ClientMissingCommandError' % error.arg_key
+        'message': 'Client did not supply a valid number as the `%s` query parameter.' % error.arg_key,
+        'exception': 'NotANumberError'
     }, 400
 
 
