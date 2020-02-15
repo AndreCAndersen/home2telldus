@@ -76,9 +76,11 @@ Warranty and Risk
 
 This service comes with ABSOLUTELY NO WARRANTY, and you use it at your own risk.
 
-Note that query parameters set using a `get` requests will be logged by heroko. This means 
+Note that query parameters set using a `get` requests will be logged by heroku. This means 
 your email and password will be stored in plain text, and retrievable.This means you 
-should not use the GET requests with this API.
+should not use the GET requests with this API. Objects sent by POST requests do not 
+seem to be logged by heroku. However, ultimately you will have to trust heroku and the
+author of this API that it will not be recorded.
 """
 
 api = Api(app, title='home2telldus API', description=doc_html)
