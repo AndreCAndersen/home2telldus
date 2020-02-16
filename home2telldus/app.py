@@ -5,6 +5,12 @@ from flask_restx import Api
 from flask_restx import Resource
 from flask_restx import fields
 
+from home2telldus.config import FROM_REPEAT_DEFAULT
+from home2telldus.config import FROM_SLEEP_DEFAULT
+from home2telldus.config import REPEAT_DEFAULT
+from home2telldus.config import SLEEP_DEFAULT
+from home2telldus.config import TO_REPEAT_DEFAULT
+from home2telldus.config import TO_SLEEP_DEFAULT
 from home2telldus.errors import RootException
 from home2telldus.errors import ClientMissingCommandError
 from home2telldus.errors import ClientMissingDeviceError
@@ -93,8 +99,12 @@ command_arg_doc = {
     'password': 'A Telldus Live password. Requires an email.',
     'device': 'The name of the device for which a command should be given. Required.',
     'command': 'Accepts either `on` or `off` as commands to the specified device. Required.',
-    'repeat': 'An integer saying how many times the command should be given, between 1 and 8. Usefull to make sure the command is actually registered. Default is 4.',
-    'sleep': 'How long (seconds) the request should wait between repeated commands. Default is 2 seconds.',
+    'repeat': 'An integer saying how many times the command should be given, between %s and %s. Usefull to make sure the command is actually registered. Default is %s.' % (
+        FROM_REPEAT_DEFAULT, TO_REPEAT_DEFAULT, REPEAT_DEFAULT
+    ),
+    'sleep': 'How long (seconds) the request should wait between repeated commands, %s and %s. Default is %s seconds.' % (
+        FROM_SLEEP_DEFAULT, TO_SLEEP_DEFAULT, SLEEP_DEFAULT
+    ),
 }
 
 default_model = api.model('DefaultModel', {
@@ -136,8 +146,8 @@ class CommandResource(Resource):
     def _handle_request(cls, args):
         email, password = cls._get_email_and_password(args)
         command, device_name = cls._get_command_and_device(args)
-        repeat = cls._get_argument(args, 'repeat', 4, 1, 8, int)
-        sleep_time = cls._get_argument(args, 'sleep', 2, 0, 2, float)
+        repeat = cls._get_argument(args, 'repeat', FROM_REPEAT_DEFAULT, TO_REPEAT_DEFAULT, REPEAT_DEFAULT, int)
+        sleep_time = cls._get_argument(args, 'sleep', FROM_SLEEP_DEFAULT, TO_SLEEP_DEFAULT, SLEEP_DEFAULT, float)
 
         with Home2TelldusClient(email, password) as client:
             client.run_command(device_name, command, repeat, sleep_time)
@@ -169,17 +179,15 @@ class CommandResource(Resource):
         return email, password
 
     @classmethod
-    def _get_argument(cls, args, arg_key, default_value, from_value, to_value, number_type):
-        value = args.get(arg_key)
-        if value:
+    def _get_argument(cls, args, arg_key, from_value, to_value, default_value, number_type):
+        value = args.get(arg_key, default_value)
+        if value is not None:
             try:
                 value = number_type(value)
             except Exception:
                 raise NotANumberError(arg_key)
             if not (from_value <= value <= to_value):
                 raise InvalidNumberError(arg_key)
-        else:
-            value = default_value
         return value
 
     @classmethod

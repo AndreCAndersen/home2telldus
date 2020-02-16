@@ -3,6 +3,8 @@ from time import sleep
 import requests
 from urllib.parse import urlencode
 
+from home2telldus.config import REPEAT_DEFAULT
+from home2telldus.config import SLEEP_DEFAULT
 from home2telldus.errors import UnknownCommandError
 from home2telldus.errors import UnknownDeviceError
 from home2telldus.errors import InvalidEmailOrPasswordError
@@ -48,7 +50,9 @@ class Home2TelldusClient:
             raise UnknownCommandError()
         return method
 
-    def run_command(self, device_name, command, repeat, sleep_time):
+    def run_command(self, device_name, command, repeat=None, sleep_time=None):
+        repeat = REPEAT_DEFAULT if repeat is None else repeat
+        sleep_time = SLEEP_DEFAULT if sleep_time is None else sleep_time
         assert self.session
         device = self._find_device(device_name)
         method = self._find_method(command)
