@@ -102,7 +102,7 @@ command_arg_doc = {
     'repeat': 'An integer saying how many times the command should be given, between %s and %s. Usefull to make sure the command is actually registered. Default is %s.' % (
         FROM_REPEAT_DEFAULT, TO_REPEAT_DEFAULT, REPEAT_DEFAULT
     ),
-    'sleep': 'How long (seconds) the request should wait between repeated commands, %s and %s. Default is %s seconds.' % (
+    'sleep': 'How long (seconds) the request should wait between repeated commands, between %s and %s. Default is %s seconds.' % (
         FROM_SLEEP_DEFAULT, TO_SLEEP_DEFAULT, SLEEP_DEFAULT
     ),
 }
