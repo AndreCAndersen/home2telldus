@@ -1,5 +1,5 @@
 fire==0.2.1
-requests==2.22.0
+requests==2.31.0
 Flask==1.1.1
 flask-restx==0.5.1
 gunicorn==20.0.4
